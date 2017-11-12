@@ -5,6 +5,16 @@
 #include <arpa/inet.h> 
 #include <unistd.h>    
 #include <pthread.h> 
+
+typedef struct mensaje {
+        int serial;
+        char fecha[10];
+        char hora[6];
+        int ID;
+        int codigo;
+        char patron[1000];
+        char info[1000];
+    } MSG;
  
 //Función de los Hilos
 void *connection_handler(void *);
@@ -80,24 +90,24 @@ void *connection_handler(void *socket_desc)
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size;
-    char *message , client_message[2000];
+    MSG message , client_message;
      
     
      
-    message = "Type \n";
-    write(sock , message , strlen(message));
+    //message = "Type \n";
+    //write(sock , message , strlen(message));
      
     //Recibe mensaje del cliente
-    while( (read_size = recv(sock , client_message , 2000 , 0)) > 0 )
+    while( (read_size = recv(sock , &client_message , sizeof(client_message) , 0)) > 0 )
     {
         //end of string marker
-		client_message[read_size] = '\0';
+		//client_message[read_size] = '\0';
 		
 		//Envía el mensaje al cliente
-        write(sock , client_message , strlen(client_message));
+        write(sock , &client_message , strlen(&client_message));
 		
 		//Limpiar Buffer del mensaje
-		memset(client_message, 0, 2000);
+		//memset(client_message, 0, 2000);
     }
      
     if(read_size == 0)
