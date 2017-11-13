@@ -17,7 +17,7 @@ int main(int argc , char *argv[])
 
     if (argc != 7)
     {
-    	printf("Wrong Sintaxis.\nPlease use: svr_s -l <puerto_svr_s> -b <archivo_bitácora>\n");
+    	printf("Wrong Sintaxis.\nsvr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]\n");
     	exit(-1);
     }
     if ((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-p") == 0) && (strcmp(argv[5],"-l") == 0))
@@ -52,7 +52,7 @@ int main(int argc , char *argv[])
     }
     else
     {
-    	printf("Wrong Sintaxis.\nPlease use: svr_s -l <puerto_svr_s> -b <archivo_bitácora>\n");
+    	printf("Wrong Sintaxis.\nsvr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]\n");
     	exit(-1);
     }
 
