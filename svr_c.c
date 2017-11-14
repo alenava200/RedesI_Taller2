@@ -13,48 +13,61 @@ int main(int argc , char *argv[])
     struct sockaddr_in server;
     char *message = (char*) malloc(2048*sizeof(char));
     char *server_reply = (char*) malloc(2048*sizeof(char));
-    char* ip_srv = (char *) malloc(512*sizeof(char));
+    char *ip_srv = (char *) malloc(512*sizeof(char));
 
-    if (argc != 7)
-    {
-    	printf("Wrong Sintaxis.\nsvr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]\n");
-    	exit(-1);
-    }
-    if ((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-p") == 0) && (strcmp(argv[5],"-l") == 0))
-    {
-    	strcpy(ip_srv, argv[2]); 
-    	port = atoi(argv[4]);
-    }
-    else if((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-l") == 0) && (strcmp(argv[5],"-p") == 0))
-    {
-    	strcpy(ip_srv, argv[2]); 
-    	port = atoi(argv[6]);
-    }
-    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-d") == 0) && (strcmp(argv[5],"-l") == 0))
-    {
-    	strcpy(ip_srv, argv[4]); 
-    	port = atoi(argv[2]);
-    }
-    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-l") == 0) && (strcmp(argv[5],"-d") == 0))
-    {
-    	strcpy(ip_srv, argv[6]); 
-    	port = atoi(argv[2]);
-    }
-    else if((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-d") == 0) && (strcmp(argv[5],"-p") == 0))
-    {
-    	strcpy(ip_srv, argv[4]); 
-    	port = atoi(argv[6]);
-    }
-    else if((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-p") == 0) && (strcmp(argv[5],"-d") == 0))
-    {
-    	strcpy(ip_srv, argv[6]); 
-    	port = atoi(argv[4]);
-    }
-    else
-    {
-    	printf("Wrong Sintaxis.\nsvr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]\n");
-    	exit(-1);
-    }
+    switch(argc) 									
+	{
+		case 5:	
+				if ((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-p") == 0))
+			    {
+			    	strcpy(ip_srv, argv[2]); 
+			    	port = atoi(argv[4]);
+			    }
+			    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-d") == 0))
+			    {
+			    	strcpy(ip_srv, argv[4]); 
+			    	port = atoi(argv[2]);
+			    }
+			    break;
+
+		case 7:	
+			    if ((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-p") == 0) && (strcmp(argv[5],"-l") == 0))
+			    {
+			    	strcpy(ip_srv, argv[2]); 
+			    	port = atoi(argv[4]);
+			    }
+			    else if((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-l") == 0) && (strcmp(argv[5],"-p") == 0))
+			    {
+			    	strcpy(ip_srv, argv[2]); 
+			    	port = atoi(argv[6]);
+			    }
+			    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-d") == 0) && (strcmp(argv[5],"-l") == 0))
+			    {
+			    	strcpy(ip_srv, argv[4]); 
+			    	port = atoi(argv[2]);
+			    }
+			    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-l") == 0) && (strcmp(argv[5],"-d") == 0))
+			    {
+			    	strcpy(ip_srv, argv[6]); 
+			    	port = atoi(argv[2]);
+			    }
+			    else if((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-d") == 0) && (strcmp(argv[5],"-p") == 0))
+			    {
+			    	strcpy(ip_srv, argv[4]); 
+			    	port = atoi(argv[6]);
+			    }
+			    else if((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-p") == 0) && (strcmp(argv[5],"-d") == 0))
+			    {
+			    	strcpy(ip_srv, argv[6]); 
+			    	port = atoi(argv[4]);
+			    }
+				break;
+
+		default:
+				printf("Wrong Sintaxis.\nsvr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]\n");
+    			exit(-1);
+
+	}
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
