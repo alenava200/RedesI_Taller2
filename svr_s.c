@@ -58,9 +58,8 @@ int main(int argc , char *argv[])
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (socket_desc == -1)
-    {
         printf("Could not create socket");
-    }
+    
     puts("Socket created");
 
     //Prepare the sockaddr_in structure
@@ -103,7 +102,7 @@ int main(int argc , char *argv[])
         }
          
         pthread_detach(sniffer_thread);
-        puts("Handler assigned");
+        puts("ATM Connected\n");
     }
      
     if (client_sock < 0)
@@ -111,7 +110,6 @@ int main(int argc , char *argv[])
         perror("accept failed");
         return 1;
     }
-     
     return 0;
 }
  
@@ -129,7 +127,7 @@ void *connection_handler(void *socket_desc)
         //Send the message back to client
         int aux = 0;
         aux = alert(hi->msg);
-        write(hi->fd , hi->msg , strlen(hi->msg));
+        //write(hi->fd , hi->msg , strlen(hi->msg));
 		pthread_mutex_lock(&hi->R->mutex);
 		if(!(fp = fopen(hi->output,"a")))
 		{
@@ -142,7 +140,10 @@ void *connection_handler(void *socket_desc)
 	 	 	fprintf(fp, "ALERT: %s",hi->msg);	
 	 	}
 	 	else
+	 	{
 	 		fprintf(fp, "%s",hi->msg);
+			printf("%s\n", hi->msg);
+		}
 		fclose(fp);
   		pthread_mutex_unlock(&hi->R->mutex); 
         memset(hi->msg, '\0', strlen(hi->msg));
@@ -151,14 +152,12 @@ void *connection_handler(void *socket_desc)
      
     if(read_size == 0)
     {
-        puts("ATM disconnected");
+        puts("ATM Disconnected");
         fflush(stdout);
     }
     else if(read_size == -1)
-    {
         perror("recv failed");
-    }
-         
+             
     //Free the socket pointer
     free(socket_desc);
     pthread_exit(NULL); 

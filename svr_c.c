@@ -12,7 +12,6 @@ int main(int argc , char *argv[])
     int sock, port;
     struct sockaddr_in server;
     char *message = (char*) malloc(2048*sizeof(char));
-    char *server_reply = (char*) malloc(2048*sizeof(char));
     char *ip_srv = (char *) malloc(512*sizeof(char));
 
     switch(argc) 									
@@ -66,21 +65,19 @@ int main(int argc , char *argv[])
 		default:
 				printf("Wrong Sintaxis.\nsvr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]\n");
     			exit(-1);
-
 	}
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
 
     if (sock == -1)
-    {
         printf("Could not create socket");
-    }
+    
     puts("Socket created");
      
     server.sin_addr.s_addr = inet_addr(ip_srv);
     server.sin_family = AF_INET;
-    server.sin_port = htons( port );
+    server.sin_port = htons(port);
  
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
@@ -89,12 +86,12 @@ int main(int argc , char *argv[])
         return 1;
     }
      
-    puts("Connected\n");
+    puts("ATM Connected\n");
      
     //keep communicating with server
     while(1)
     {
-        printf("Enter message : ");
+        printf("Enter message: ");
         fgets(message, 2048, stdin);
 
         //Send some data
@@ -103,21 +100,9 @@ int main(int argc , char *argv[])
             puts("Send failed");
             return 1;
         }
-         
-        //Receive a reply from the server
-        if( read(sock , server_reply , 2048) < 0)
-        {
-            puts("recv failed");
-            break;
-        }
-         
-        puts("\nServer reply :");
-        puts(server_reply);
-        memset(server_reply, '\0', 2048);
         memset(message, '\0', 2048);
     }
     free(message);
-    free(server_reply);
     close(sock);
     return 0;
 }
