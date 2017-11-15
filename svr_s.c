@@ -120,6 +120,15 @@ void *connection_handler(void *socket_desc)
     hilo *hi = (hilo*) socket_desc;
     int read_size;
 	FILE* fp;
+    int optval = 1;
+    socklen_t optlen = sizeof(optval);
+ 
+	if(setsockopt(hi->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0)
+	{
+	    perror("setsockopt()");
+	    close(hi->fd);
+	    exit(-1);
+	}
 
     //Receive a message from client
     while( (read_size = read(hi->fd , hi->msg , 2048)) > 0 )
@@ -127,7 +136,6 @@ void *connection_handler(void *socket_desc)
         //Send the message back to client
         int aux = 0;
         aux = alert(hi->msg);
-        //write(hi->fd , hi->msg , strlen(hi->msg));
 		pthread_mutex_lock(&hi->R->mutex);
 		if(!(fp = fopen(hi->output,"a")))
 		{

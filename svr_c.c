@@ -73,8 +73,6 @@ int main(int argc , char *argv[])
     if (sock == -1)
         printf("Could not create socket");
     
-    puts("Socket created");
-     
     server.sin_addr.s_addr = inet_addr(ip_srv);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
@@ -83,6 +81,7 @@ int main(int argc , char *argv[])
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
         perror("connect failed. Error");
+        close(sock);
         return 1;
     }
      
@@ -98,6 +97,7 @@ int main(int argc , char *argv[])
         if( send(sock , message , strlen(message) , 0) < 0)
         {
             puts("Send failed");
+            close(sock);
             return 1;
         }
         memset(message, '\0', 2048);
