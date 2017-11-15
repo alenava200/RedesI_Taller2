@@ -11,9 +11,10 @@ int main(int argc , char *argv[])
 {
     int sock, port;
     struct sockaddr_in server;
-    char *message = (char*) malloc(2048*sizeof(char));
-    char *ip_srv = (char *) malloc(512*sizeof(char));
+    char *message = (char*) malloc(2048*sizeof(char)); 		// Cadena de caracteres que almacena los mensajes que se transmitiran al servidor
+    char *ip_srv = (char *) malloc(512*sizeof(char)); 		// Cadena de caracteres donde se almacena la direccion ip del servidor indicado por el usuario
 
+    // Selector que permite que el programa funcione con la sintaxis deseada vr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]
     switch(argc) 									
 	{
 		case 5:	
@@ -73,9 +74,9 @@ int main(int argc , char *argv[])
     if (sock == -1)
         printf("Could not create socket");
     
-    server.sin_addr.s_addr = inet_addr(ip_srv);
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
+    server.sin_addr.s_addr = inet_addr(ip_srv); 			// Se indica la direccion del servidor indicado por usuario
+    server.sin_family = AF_INET;							// IPv4
+    server.sin_port = htons(port);							// Se indica el puerto por donde escucha el servidor indicado por el usario
  
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)

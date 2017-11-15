@@ -10,12 +10,13 @@
 void *connection_handler(void *);
 int alert(char *msg);
 
-typedef struct hilo
-{
-	int fd;
-	char *msg;
-	char *output;
-	pthread_mutex_t mutex;
+// Estructura que sirve para pasar los parametros que los hilos se deben llevar a la funcion donde los hilos reciben la informacion de los clientes
+typedef struct hilo 									
+{														
+	int fd; 							// File descriptor
+	char *msg;							// Cadena de caracteres donde se almacenan los mensajes que recibe el servidor
+	char *output; 						// Cadena de caracteres donde se almacena el Nombre del archivo de salida
+	pthread_mutex_t mutex; 				// Mutex que evita que varios hilos escriban sobre el archivo de salida al mismo tiempo
 }hilo;
 
 int main(int argc , char *argv[])
@@ -24,17 +25,18 @@ int main(int argc , char *argv[])
     struct sockaddr_in server , client;
  	char *output = (char *) malloc(512*sizeof(char));
 
+ 	// Condicionales que permiten que el comando funcione con la sintaxis deseada
     if (argc != 5)
     {
     	printf("Wrong Sintaxis.\nPlease use: svr_s -l <puerto_svr_s> -b <archivo_bitácora>\n");
     	exit(-1);
     }
-    if ((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-b") == 0))
+    if ((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-b") == 0)) 			// Caso svr_s -l <puerto_svr_s> -b <archivo_bitácora>
     {
     	port = atoi(argv[2]);
     	strcpy(output, argv[4]);
     }
-    else if((strcmp(argv[1],"-b") == 0) && (strcmp(argv[3],"-l") == 0))
+    else if((strcmp(argv[1],"-b") == 0) && (strcmp(argv[3],"-l") == 0)) 		// Caso svr_s  -b <archivo_bitácora> -l <puerto_svr_s>
     {
     	port = atoi(argv[4]);
     	strcpy(output, argv[2]);
@@ -50,12 +52,10 @@ int main(int argc , char *argv[])
     if (socket_desc == -1)
         printf("Could not create socket");
     
-    puts("Socket created");
-
     //Prepare the sockaddr_in structure
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( port );
+    server.sin_family = AF_INET; 					// IPv4
+    server.sin_addr.s_addr = INADDR_ANY;			// Recibe clientes con cualquier direccion IP
+    server.sin_port = htons( port ); 				// Oye por el puerto indicado por el usuario 
      
     //Bind
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
@@ -64,13 +64,14 @@ int main(int argc , char *argv[])
         perror("bind failed. Error");
         return 1;
     }
-    puts("bind done");
-     
+
+    puts("The SVR module has been initialized");
+
     //Listen
     listen(socket_desc , 3);
      
     //Accept and incoming connection
-    puts("Waiting for incoming connections...");
+    puts("Waiting for incoming  ATM connections...");
     c = sizeof(struct sockaddr_in);
 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
@@ -78,6 +79,8 @@ int main(int argc , char *argv[])
         puts("Connection accepted");
          
         pthread_t sniffer_thread;
+
+        // Se inicializan parametros que se llevara el hilo a la funcion donde estaran recibiendo informacion del cliente
         hilo *h = (hilo*) malloc(sizeof(hilo));
         h->fd = client_sock;
         h->msg = (char*) malloc(2048*sizeof(char));
@@ -102,12 +105,14 @@ int main(int argc , char *argv[])
     }
     return 0;
 }
- 
+
+
+// Funcion que mantiene la conexion con los clientes, escribiendo los mensajes entrantes en un archivo. 
 void *connection_handler(void *socket_desc)
 {
     //Get the socket descriptor
 
-    hilo *hi = (hilo*) socket_desc;
+    hilo *hi = (hilo*) socket_desc; 					// CAST
     int read_size;
 	FILE* fp;
     int optval = 1;
@@ -125,7 +130,11 @@ void *connection_handler(void *socket_desc)
     {
         //Send the message back to client
         int aux = 0;
+
+        // Verifico si el mensaje entrante posee informacion de interes para generar una alerta
         aux = alert(hi->msg);
+
+        // Comienzo de region critica, solo un hilo pasa a la vez
 		pthread_mutex_lock(&hi->mutex);
 		if(!(fp = fopen(hi->output,"a")))
 		{
@@ -144,6 +153,8 @@ void *connection_handler(void *socket_desc)
 		}
 		fclose(fp);
   		pthread_mutex_unlock(&hi->mutex); 
+  		// Fin region critica
+
         memset(hi->msg, '\0', strlen(hi->msg));
         fflush(stdout);
     }
@@ -158,10 +169,12 @@ void *connection_handler(void *socket_desc)
              
     //Free the socket pointer
     free(socket_desc);
-    pthread_exit(NULL); 
+    pthread_exit(NULL);
     return 0;
 }
 
+
+//Funcion que compara cadenas de caracteres y retorna 1 si hay coincidencia (hay alerta) y cero de  lo contrario
 int alert(char *msg)
 {
     if (strcmp(msg,"Communication Offline\n") == 0)
