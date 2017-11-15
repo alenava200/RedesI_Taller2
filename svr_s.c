@@ -10,29 +10,19 @@
 void *connection_handler(void *);
 int alert(char *msg);
 
-typedef struct 										                
-{
-	char *info;
-  	pthread_mutex_t mutex;
-}Report;
-
-Report* init_Report();
-
 typedef struct hilo
 {
 	int fd;
 	char *msg;
 	char *output;
-	Report *R;
+	pthread_mutex_t mutex;
 }hilo;
 
 int main(int argc , char *argv[])
 {
     int socket_desc , client_sock , c, port;
     struct sockaddr_in server , client;
-    Report *R; 							
-	R = init_Report();
-	char *output = (char *) malloc(512*sizeof(char));
+ 	char *output = (char *) malloc(512*sizeof(char));
 
     if (argc != 5)
     {
@@ -93,7 +83,7 @@ int main(int argc , char *argv[])
         h->msg = (char*) malloc(2048*sizeof(char));
         h->output = (char*) malloc(512*sizeof(char));
         strcpy(h->output, output);
-        h->R = R;
+        pthread_mutex_init(&h->mutex, NULL);;
 
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) h) < 0)
         {
@@ -136,7 +126,7 @@ void *connection_handler(void *socket_desc)
         //Send the message back to client
         int aux = 0;
         aux = alert(hi->msg);
-		pthread_mutex_lock(&hi->R->mutex);
+		pthread_mutex_lock(&hi->mutex);
 		if(!(fp = fopen(hi->output,"a")))
 		{
 			printf("Error, Permission denied. Non generated report\n");
@@ -153,7 +143,7 @@ void *connection_handler(void *socket_desc)
 			printf("%s\n", hi->msg);
 		}
 		fclose(fp);
-  		pthread_mutex_unlock(&hi->R->mutex); 
+  		pthread_mutex_unlock(&hi->mutex); 
         memset(hi->msg, '\0', strlen(hi->msg));
         fflush(stdout);
     }
@@ -211,12 +201,4 @@ int alert(char *msg)
         return 1;
 
     return 0;
-}
-
-Report* init_Report() 
-{
-	Report *R;
-  	R = (Report *) malloc(sizeof(Report));
-  	pthread_mutex_init(&R->mutex, NULL);
-  	return R;
 }
