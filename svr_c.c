@@ -1,9 +1,9 @@
-#include <stdio.h> //printf
-#include <string.h>    //strlen
-#include <sys/socket.h>    //socket
-#include <arpa/inet.h> //inet_addr
-#include <stdlib.h> //inet_addr
-#include <unistd.h> //inet_addr
+#include <stdio.h> 
+#include <string.h>
+#include <sys/socket.h> 
+#include <arpa/inet.h> 
+#include <stdlib.h> 
+#include <unistd.h> 
 #include <pthread.h>
 
  
@@ -91,11 +91,12 @@ int main(int argc , char *argv[])
     //keep communicating with server
     while(1)
     {
+        
         printf("Enter message: ");
         fgets(message, 2048, stdin);
 
         //Send some data
-        if( send(sock , message , strlen(message) , 0) < 0)
+        if( write(sock , message , strlen(message)) < 0)
         {
             puts("Send failed");
             close(sock);

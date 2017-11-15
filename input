@@ -1,0 +1,12 @@
+003:28:2012:01:38:200004 Communication Offline
+003:28:2012:02:45:260004 Communication error
+003:28:2012:03:52:420004 Low Cash alert
+003:28:2012:04:39:250004 Running Out of notes in cassette
+003:28:2012:05:41:000004 empty
+003:28:2012:06:41:390004 Service mode entered
+003:28:2012:07:38:200004 Service mode left
+003:28:2012:08:45:260004 device did not answer as expected
+003:28:2012:09:52:420004 The protocol was cancelled
+003:28:2012:10:39:250004 Low Paper warning
+003:28:2012:11:41:000004 Printer Error
+003:28:2012:12:41:390004 Paper-out condition

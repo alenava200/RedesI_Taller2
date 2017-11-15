@@ -177,41 +177,21 @@ void *connection_handler(void *socket_desc)
 //Funcion que compara cadenas de caracteres y retorna 1 si hay coincidencia (hay alerta) y cero de  lo contrario
 int alert(char *msg)
 {
-    if (strcmp(msg,"Communication Offline\n") == 0)
-    	return 1;
 
-    if (strcmp(msg,"Communication error\n") == 0)
-        return 1;
+    int code1 = msg[12] - '0';
+    int code2 = msg[13] - '0';
 
-    if (strcmp(msg,"Low Cash alert\n") == 0)
-        return 1;
-    
-    if (strcmp(msg,"Running Out of notes in cassette\n") == 0)
-        return 1;
+    if (code1 == 0)
+    {
+        for (int j = 1; j < 10; j++)
+            if(code2 == j)
+                return 1;
 
-    if (strcmp(msg,"empty\n") == 0)
-        return 1;
-
-    if (strcmp(msg,"Service mode entered\n") == 0)
-        return 1;
-
-    if (strcmp(msg,"Service mode left\n") == 0)
-      	return 1;
-
-    if (strcmp(msg,"device did not answer as expected\n") == 0)
-        return 1;
-
-    if (strcmp(msg,"The protocol was cancelled\n") == 0)
-        return 1;
-
-    if (strcmp(msg,"Low Paper warning\n") == 0)
-        return 1;
-    
-    if (strcmp(msg,"Printer Error\n") == 0)
-        return 1;
-
-    if (strcmp(msg,"Paper-out condition\n") == 0)
-        return 1;
-
+    }else if (code1 == 1)
+    {
+        for (int j = 0; j < 3; j++)
+            if(code2 == j)
+                return 1;
+    }
     return 0;
 }
