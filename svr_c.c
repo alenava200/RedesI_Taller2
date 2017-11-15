@@ -1,124 +1,108 @@
-#include <stdio.h>
-#include <string.h>    
-#include <stdlib.h>    
-#include <sys/socket.h>
-#include <arpa/inet.h> 
-#include <unistd.h>    
-#include <pthread.h> 
+#include <stdio.h> //printf
+#include <string.h>    //strlen
+#include <sys/socket.h>    //socket
+#include <arpa/inet.h> //inet_addr
+#include <stdlib.h> //inet_addr
+#include <unistd.h> //inet_addr
+#include <pthread.h>
 
-typedef struct mensaje {
-        int serial;
-        char fecha[10];
-        char hora[6];
-        int ID;
-        int codigo;
-        char patron[1000];
-        char info[1000];
-    } MSG;
- 
-//Función de los Hilos
-void *connection_handler(void *);
  
 int main(int argc , char *argv[])
 {
-    int socket_desc , client_sock , c;
-    struct sockaddr_in server , client;
-     
+    int sock, port;
+    struct sockaddr_in server;
+    char *message = (char*) malloc(2048*sizeof(char));
+    char *ip_srv = (char *) malloc(512*sizeof(char));
+
+    switch(argc) 									
+	{
+		case 5:	
+				if ((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-p") == 0))
+			    {
+			    	strcpy(ip_srv, argv[2]); 
+			    	port = atoi(argv[4]);
+			    }
+			    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-d") == 0))
+			    {
+			    	strcpy(ip_srv, argv[4]); 
+			    	port = atoi(argv[2]);
+			    }
+			    break;
+
+		case 7:	
+			    if ((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-p") == 0) && (strcmp(argv[5],"-l") == 0))
+			    {
+			    	strcpy(ip_srv, argv[2]); 
+			    	port = atoi(argv[4]);
+			    }
+			    else if((strcmp(argv[1],"-d") == 0) && (strcmp(argv[3],"-l") == 0) && (strcmp(argv[5],"-p") == 0))
+			    {
+			    	strcpy(ip_srv, argv[2]); 
+			    	port = atoi(argv[6]);
+			    }
+			    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-d") == 0) && (strcmp(argv[5],"-l") == 0))
+			    {
+			    	strcpy(ip_srv, argv[4]); 
+			    	port = atoi(argv[2]);
+			    }
+			    else if((strcmp(argv[1],"-p") == 0) && (strcmp(argv[3],"-l") == 0) && (strcmp(argv[5],"-d") == 0))
+			    {
+			    	strcpy(ip_srv, argv[6]); 
+			    	port = atoi(argv[2]);
+			    }
+			    else if((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-d") == 0) && (strcmp(argv[5],"-p") == 0))
+			    {
+			    	strcpy(ip_srv, argv[4]); 
+			    	port = atoi(argv[6]);
+			    }
+			    else if((strcmp(argv[1],"-l") == 0) && (strcmp(argv[3],"-p") == 0) && (strcmp(argv[5],"-d") == 0))
+			    {
+			    	strcpy(ip_srv, argv[6]); 
+			    	port = atoi(argv[4]);
+			    }
+				break;
+
+		default:
+				printf("Wrong Sintaxis.\nsvr_c -d <nombre_módulo_central> -p <puerto_svr_s> [-l <puerto_local>]\n");
+    			exit(-1);
+	}
+
     //Create socket
-    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    if (socket_desc == -1)
-    {
+    sock = socket(AF_INET , SOCK_STREAM , 0);
+
+    if (sock == -1)
         printf("Could not create socket");
-    }
-    puts("Socket created");
-     
-    //Prepare the sockaddr_in structure
+    
+    server.sin_addr.s_addr = inet_addr(ip_srv);
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
-     
-    //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+    server.sin_port = htons(port);
+ 
+    //Connect to remote server
+    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
-        //print the error message
-        perror("bind failed. Error");
+        perror("connect failed. Error");
+        close(sock);
         return 1;
     }
-    puts("bind done");
      
-    //Listen
-    listen(socket_desc , 3);
+    puts("ATM Connected\n");
      
-    //Accept and incoming connection
-    puts("Esperando Conexion...");
-    c = sizeof(struct sockaddr_in);
-     
-     
-    //Accept and incoming connection
-    puts("Esperando Conexion...");
-    c = sizeof(struct sockaddr_in);
-	pthread_t thread_id;
-	
-    while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
+    //keep communicating with server
+    while(1)
     {
-        puts("Conexion Aceptada");
-         
-        if( pthread_create( &thread_id , NULL ,  connection_handler , (void*) &client_sock) < 0)
+        printf("Enter message: ");
+        fgets(message, 2048, stdin);
+
+        //Send some data
+        if( send(sock , message , strlen(message) , 0) < 0)
         {
-            perror("No se pudo crear el hilo");
+            puts("Send failed");
+            close(sock);
             return 1;
         }
-         
-        
-        puts("Handler assigned");
+        memset(message, '\0', 2048);
     }
-     
-    if (client_sock < 0)
-    {
-        perror("accept failed");
-        return 1;
-    }
-     
+    free(message);
+    close(sock);
     return 0;
 }
- 
-/*
- * Conexión con el cliente
- * */
-void *connection_handler(void *socket_desc)
-{
-    //Get the socket descriptor
-    int sock = *(int*)socket_desc;
-    int read_size;
-    MSG message , client_message;
-     
-    
-     
-    //message = "Type \n";
-    //write(sock , message , strlen(message));
-     
-    //Recibe mensaje del cliente
-    while( (read_size = recv(sock , &client_message , sizeof(client_message) , 0)) > 0 )
-    {
-        //end of string marker
-		//client_message[read_size] = '\0';
-		
-		//Envía el mensaje al cliente
-        write(sock , &client_message , strlen(&client_message));
-		
-		//Limpiar Buffer del mensaje
-		//memset(client_message, 0, 2000);
-    }
-     
-    if(read_size == 0)
-    {
-        puts("Cliente Desconectado");
-        fflush(stdout);
-    }
-    else if(read_size == -1)
-    {
-        perror("recv failed");
-    }
-         
-    return 0;
-} 
