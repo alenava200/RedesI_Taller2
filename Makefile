@@ -1,8 +1,8 @@
 
-all: server client
+all: svr_s svr_c
 
-server: svr_s.c
-	gcc -o server svr_s.c -lpthread
+svr_s: svr_s.c
+	gcc -o svr_s svr_s.c -lpthread header.h
 
-client: svr_c.c
-	gcc -o client svr_c.c
+svr_c: svr_c.c
+	gcc -o svr_c svr_c.c header.h
