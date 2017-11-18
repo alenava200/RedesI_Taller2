@@ -4,20 +4,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h> 
 #include <unistd.h>    
-#include <pthread.h> 
- 
-//the thread function
-void *connection_handler(void *);
-int alert(char *msg);
+#include <pthread.h>
 
-// Estructura que sirve para pasar los parametros que los hilos se deben llevar a la funcion donde los hilos reciben la informacion de los clientes
-typedef struct hilo 									
-{														
-	int fd; 							// File descriptor
-	char *msg;							// Cadena de caracteres donde se almacenan los mensajes que recibe el servidor
-	char *output; 						// Cadena de caracteres donde se almacena el Nombre del archivo de salida
-	pthread_mutex_t mutex; 				// Mutex que evita que varios hilos escriban sobre el archivo de salida al mismo tiempo
-}hilo;
+#include "header.h"
 
 int main(int argc , char *argv[])
 {
