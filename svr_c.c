@@ -13,21 +13,18 @@
 #include "header.h"
 
 
-int input_timeout (int filedes, unsigned int seconds){
-
-	fd_set set;
+int input_timeout (int filedes, unsigned int seconds){		// Se crea una función que recibe el file descriptor del socket y una cantidad 
+								// de tiempo en segundos
+	fd_set set;						
 	struct timeval timeout;
 
-	/* Initialize the file descriptor set. */
-	FD_ZERO (&set);
+	FD_ZERO (&set);						// Se inicializa el fd del socket
 	FD_SET (filedes, &set);
 
-	/* Initialize the timeout data structure. */
-	timeout.tv_sec = seconds;
+	timeout.tv_sec = seconds;				// Inicializa la estructura de tiempo
 	timeout.tv_usec = 0;
 
-	/* select returns 0 if timeout, 1 if input available, -1 if error. */
-	return (select (FD_SETSIZE,&set, NULL, NULL,&timeout));
+	return (select (FD_SETSIZE,&set, NULL, NULL,&timeout));	// Devuelve 1 si está activo el canal; 0 si no está activo y -1 en caso de error
 }
 
 
@@ -272,7 +269,6 @@ int main(int argc , char *argv[])
 	    {
 	        if (!input_timeout(STDIN_FILENO,300)){			// Se esperan 5 minutos para el envío de data.
 
-	    		printf("Enter message: ");
 		        fgets(message, 2048, stdin);
 	    		fprintf (stderr, "\nNo data sent \n");		// Se informa que no se ha enviado data, pero mantiene activa la conexión
 	    		fprintf(stderr,"Please enter message: ");	// y se solicita que ingrese un mensaje.
