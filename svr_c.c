@@ -6,8 +6,30 @@
 #include <unistd.h> 
 #include <pthread.h>
 #include <netdb.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <errno.h>
 
 #include "header.h"
+
+
+int input_timeout (int filedes, unsigned int seconds){
+
+	fd_set set;
+	struct timeval timeout;
+
+	/* Initialize the file descriptor set. */
+	FD_ZERO (&set);
+	FD_SET (filedes, &set);
+
+	/* Initialize the timeout data structure. */
+	timeout.tv_sec = seconds;
+	timeout.tv_usec = 0;
+
+	/* select returns 0 if timeout, 1 if input available, -1 if error. */
+	return (select (FD_SETSIZE,&set, NULL, NULL,&timeout));
+}
+
 
 int main(int argc , char *argv[])
 {
@@ -248,24 +270,32 @@ int main(int argc , char *argv[])
 	    //keep communicating with server
 	    while(1)
 	    {
-	        
-	        printf("Enter message: ");
-	        fgets(message, 2048, stdin);
+	        if (!input_timeout(STDIN_FILENO,300)){			// Se esperan 5 minutos para el envío de data.
 
-	        if (message[0] == '\0')						// Cuando se manda como entrada un archivo esto hace que al termniar de leerlo culmine el programa
-	           	return 0;
-	        
-	        //Send some data
-	        if(send(sock , message , strlen(message), MSG_NOSIGNAL) < 0)
-	        {
-	            puts("Send failed");
-	            flag = 1;
-	            strcpy(sp,message);
-	            close(sock);
-	            break;    
-	        }
-	        strcpy(pp,message);
-	        memset(message, '\0', 2048);
+	    		printf("Enter message: ");
+		        fgets(message, 2048, stdin);
+	    		fprintf (stderr, "\nNo data sent \n");		// Se informa que no se ha enviado data, pero mantiene activa la conexión
+	    		fprintf(stderr,"Please enter message: ");	// y se solicita que ingrese un mensaje.
+
+	    	}else{
+			printf("Enter message: ");
+			fgets(message, 2048, stdin);
+
+			if (message[0] == '\0')						// Cuando se manda como entrada un archivo esto hace que al termniar de leerlo culmine el programa
+				return 0;
+
+			//Send some data
+			if(send(sock , message , strlen(message), MSG_NOSIGNAL) < 0)
+			{
+			    puts("Send failed");
+			    flag = 1;
+			    strcpy(sp,message);
+			    close(sock);
+			    break;    
+			}
+			strcpy(pp,message);
+			memset(message, '\0', 2048);
+		}
 	    }
 	}
 	free(pp);
