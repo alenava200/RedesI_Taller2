@@ -10,9 +10,9 @@
 
 int main(int argc , char *argv[])
 {
-    int socket_desc , client_sock , c, port;
+    int socket_desc , client_sock , c, port;								// port: puerto por donde escuchara el servidor
     struct sockaddr_in server , client;
- 	char *output = (char *) malloc(512*sizeof(char));
+ 	char *output = (char *) malloc(512*sizeof(char));						// Cadena de caracteres donde se almacenara el nombre del archivo de salida	
 
  	// Condicionales que permiten que el comando funcione con la sintaxis deseada
     if (argc != 5)

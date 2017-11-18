@@ -11,14 +11,16 @@
 
 int main(int argc , char *argv[])
 {
-    int sock, port, local_port;
-    struct sockaddr_in server;
-    struct sockaddr_in client;
+    int sock, port, local_port;								// sock: file descriptor del socket. port: puerto del servidor. local_port: puerto del cliente.
+    struct sockaddr_in server;								// server almacenara los parametros del servidor
+    struct sockaddr_in client;								// Estructura usada para almacenar el puerto del cliente
     char *message = (char*) malloc(2048*sizeof(char)); 		// Cadena de caracteres que almacena los mensajes que se transmitiran al servidor
     char *ip_srv = (char *) malloc(512*sizeof(char)); 		// Cadena de caracteres donde se almacena la direccion ip del servidor indicado por el usuario
-    int flag = 0, flag2, flag3=0, flag4=0; 
-    struct hostent *servidor; //Declaración de la estructura con información del host
+    int flag = 0, flag2=0;			 						// flag: indica cuando el servidor esta caido. flag2: 1 cuando se indica el servidor por nombre de dominio
+    int flag3 = 0;											// flag3: indica cuando se pasa el puerto del cliente como parametro
+    struct hostent *servidor; 								// Estructura unicamente usada si se indica el servidor por nombre de dominio
 
+    // Cadenas de caracteres auxiliares que son usadas cuando se cae la conexion con el servidor para encolar los mensajes que se tratan de enviar sin conexion
     char *pp = (char *) malloc(2048*sizeof(char));
     char *sp = (char *) malloc(2048*sizeof(char));
 
@@ -30,10 +32,15 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[2]);
 			    	
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57) 						// En caso de que se indique el servidor por nombre de dominio
 			    	{
 			    		servidor = gethostbyname(argv[2]); 
-			       		flag3 = 1;
+			    		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			       		flag2 = 1;
 			       	}
 			    	
 			    	port = atoi(argv[4]);
@@ -42,10 +49,15 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[4]); 
 
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57) 						// En caso de que se indique el servidor por nombre de dominio
 			    	{
-			    		servidor = gethostbyname(argv[2]); 
-			       		flag3 = 1;
+			    		servidor = gethostbyname(argv[4]);
+			    		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			       		flag2 = 1;
 			        }
 			    	
 			    	port = atoi(argv[2]);
@@ -57,10 +69,15 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[2]);
 
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57) 			// En caso de que se indique el servidor por nombre de dominio
 			    	{
 			    		servidor = gethostbyname(argv[2]); 
-			       		flag3 = 1;
+			       		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			       		flag2 = 1;
 			        }
 			    	
 			    	port = atoi(argv[4]);
@@ -70,10 +87,15 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[2]);
 
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57) 		// En caso de que se indique el servidor por nombre de dominio
 			    	{
 			    		servidor = gethostbyname(argv[2]); 
-			       		flag3 = 1;
+			       		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			       		flag2 = 1;
 			        } 
 
 			    	port = atoi(argv[6]);
@@ -83,10 +105,15 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[4]); 
 
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)  		// En caso de que se indique el servidor por nombre de dominio
 			    	{
 			    		servidor = gethostbyname(argv[4]); 
-			       		flag3 = 1;
+			       		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			       		flag2 = 1;
 			        }
 			    	
 			    	port = atoi(argv[2]);
@@ -96,10 +123,15 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[6]);
 
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57) 			// En caso de que se indique el servidor por nombre de dominio
 			    	{
 			    		servidor = gethostbyname(argv[6]); 
-			    		flag3 = 1;
+			    		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			    		flag2 = 1;
 			    	}			    		  
 			    	
 			    	port = atoi(argv[2]);
@@ -109,10 +141,15 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[4]);
 
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57) 			// En caso de que se indique el servidor por nombre de dominio
 			    	{
 			    		servidor = gethostbyname(argv[4]);
-			    		flag3 = 1;
+			    		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			    		flag2 = 1;
 			    	} 
 			    	
 			    	port = atoi(argv[6]);
@@ -122,16 +159,21 @@ int main(int argc , char *argv[])
 			    {
 			    	strcpy(ip_srv, argv[6]);
 			    	
-			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)
+			    	if (ip_srv[0] < 48 || ip_srv[0] > 57)  				// En caso de que se indique el servidor por nombre de dominio
 			    	{	
 			    		servidor = gethostbyname(argv[6]); 
-			    		flag3 = 1;
+			    		if (!servidor )
+			    		{
+			    			puts("Invalid server addres");
+			    			return -1;
+			    		}
+			    		flag2 = 1;
 			    	}
 			    		  
 			    	port = atoi(argv[4]);
 			    	local_port = atoi(argv[2]);
 			    }
-			    flag4=1;
+			    flag3=1;
 				break;
 
 		default:
@@ -149,19 +191,18 @@ int main(int argc , char *argv[])
 	        continue;
 	    }
 
-	    if (flag3)
+	    if (flag2) 			// Si el servidor se indico por nombre de dominio 
 	    {
 	    	bzero((char *)&server, sizeof((char *)&server));
 	    	bcopy((char *)servidor->h_addr, (char *)&server.sin_addr.s_addr, sizeof(servidor->h_length));
 	    }
 	    else
-	    {
-	    	server.sin_addr.s_addr = inet_addr(ip_srv); 			// Se indica la direccion del servidor indicado por usuario
-	    }
+	       	server.sin_addr.s_addr = inet_addr(ip_srv); 			// Se indica la direccion del servidor indicado por usuario
+	    
 	    server.sin_family = AF_INET;							// IPv4
 	    server.sin_port = htons(port);							// Se indica el puerto por donde escucha el servidor indicado por el usario
 	 
-	 	if (flag4) 													//Si el usuario indico un puerto local especifico
+	 	if (flag3) 													//Si el usuario indico un puerto local especifico
 	 	{
     		client.sin_addr.s_addr = INADDR_ANY;				// Recibe clientes con cualquier direccion IP
 		    client.sin_family = AF_INET;						// IPv4
@@ -192,7 +233,6 @@ int main(int argc , char *argv[])
 	    	if(send(sock , pp , strlen(pp), MSG_NOSIGNAL) < 0)
 	        {
 	            puts("Send failed");
-	            flag2 = 1;
 	            close(sock);
 	        }
 	        memset(pp, '\0', 2048);
@@ -200,7 +240,6 @@ int main(int argc , char *argv[])
 	        if(send(sock , sp , strlen(sp), MSG_NOSIGNAL) < 0)
 	        {
 	            puts("Send failed");
-	            flag2 = 1;
 	            close(sock);
 	        }
 	        memset(sp, '\0', 2048);
@@ -229,6 +268,9 @@ int main(int argc , char *argv[])
 	        memset(message, '\0', 2048);
 	    }
 	}
+	free(pp);
+	free(sp);
+	free(ip_srv);
     free(message);
     close(sock);
     return 0;
