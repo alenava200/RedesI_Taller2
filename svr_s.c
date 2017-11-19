@@ -5,8 +5,46 @@
 #include <arpa/inet.h> 
 #include <unistd.h>    
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <errno.h>
 
 #include "header.h"
+
+
+int input_timeout (int filedes, unsigned int seconds){      // Se crea una función que recibe el file descriptor del socket y una cantidad 
+                                                            // de tiempo en segundos    
+    fd_set set;                                             
+    struct timeval timeout;
+
+
+    FD_ZERO (&set);                                         // Se inicializa el fd del socket
+    FD_SET (filedes, &set);
+
+    timeout.tv_sec = seconds;                               // Inicializa la estructura de tiempo
+    timeout.tv_usec = 0;
+
+    return (select (FD_SETSIZE,&set, NULL, NULL,&timeout)); // Devuelve 1 si está activo el canal; 0 si no está activo y -1 en caso de error
+}
+
+int mail_alert(char *message){
+    char* command = (char *) malloc(1000*sizeof(char));
+    char* mailto;
+    if((mailto = getenv("MAILTO")) != NULL){
+        strcpy(command, "echo \"ALERT: ");
+        strncat(command, message, strlen(message)-1);
+        strcat(command, "\" | mail -s \"REDBANC ALERT\" ");
+        strcat(command, mailto);
+        system(command);
+        printf("MAIL COMMAND: %s\n", command);
+    }
+    else{
+        printf("Please set the $MAILTO variable in your environment to the account where you want to recieve these messages\n");
+    }
+    return 0;
+}
+
+
 
 int main(int argc , char *argv[])
 {
@@ -123,8 +161,11 @@ void *connection_handler(void *socket_desc)
         // Verifico si el mensaje entrante posee informacion de interes para generar una alerta
         aux = alert(hi->msg);
 
+
         // Comienzo de region critica, solo un hilo pasa a la vez
 		pthread_mutex_lock(&hi->mutex);
+
+
 		if(!(fp = fopen(hi->output,"a")))
 		{
 			printf("Error, Permission denied. Non generated report\n");
@@ -133,12 +174,23 @@ void *connection_handler(void *socket_desc)
 	 	if (alert(hi->msg))
 	 	{
 	 		printf("ALERT: %s\n", hi->msg);
-	 	 	fprintf(fp, "ALERT: %s",hi->msg);	
+	 	 	fprintf(fp, "ALERT: %s",hi->msg);
+            mail_alert(hi->msg);
 	 	}
 	 	else
 	 	{
-	 		fprintf(fp, "%s",hi->msg);
-			printf("%s\n", hi->msg);
+
+            fprintf(fp, "%s",hi->msg);
+            printf("%s\n", hi->msg);
+            
+            while (!input_timeout(hi->fd,300)){   // Se esperan 5 minutos para el envío de data.
+
+                fprintf (stderr, "\nNo data sent \n");              // Se informa que no se ha enviado data, pero mantiene activa la conexión
+                //fprintf(stderr,"Please enter message ");            // y se solicita que ingrese un mensaje.
+            }
+	 		    
+
+            
 		}
 		fclose(fp);
   		pthread_mutex_unlock(&hi->mutex); 
@@ -147,6 +199,8 @@ void *connection_handler(void *socket_desc)
         memset(hi->msg, '\0', strlen(hi->msg));
         fflush(stdout);
     }
+
+
      
     if(read_size == 0)
     {
