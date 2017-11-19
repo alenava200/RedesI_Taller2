@@ -13,21 +13,6 @@
 #include "header.h"
 
 
-int input_timeout (int filedes, unsigned int seconds){		// Se crea una función que recibe el file descriptor del socket y una cantidad 
-								// de tiempo en segundos
-	fd_set set;						
-	struct timeval timeout;
-
-	FD_ZERO (&set);						// Se inicializa el fd del socket
-	FD_SET (filedes, &set);
-
-	timeout.tv_sec = seconds;				// Inicializa la estructura de tiempo
-	timeout.tv_usec = 0;
-
-	return (select (FD_SETSIZE,&set, NULL, NULL,&timeout));	// Devuelve 1 si está activo el canal; 0 si no está activo y -1 en caso de error
-}
-
-
 int main(int argc , char *argv[])
 {
     int sock, port, local_port;								// sock: file descriptor del socket. port: puerto del servidor. local_port: puerto del cliente.
@@ -201,8 +186,8 @@ int main(int argc , char *argv[])
 	}
 	while(1)
 	{
-	    //Create socket
-	    sock = socket(AF_INET , SOCK_STREAM , 0);
+	  
+	    sock = socket(AF_INET , SOCK_STREAM , 0);  //Crea el Socket
 
 	    if (sock == -1)
 	    {
@@ -216,12 +201,12 @@ int main(int argc , char *argv[])
 	    	bcopy((char *)servidor->h_addr, (char *)&server.sin_addr.s_addr, sizeof(servidor->h_length));
 	    }
 	    else
-	       	server.sin_addr.s_addr = inet_addr(ip_srv); 			// Se indica la direccion del servidor indicado por usuario
+	       	server.sin_addr.s_addr = inet_addr(ip_srv); 		// Se indica la direccion del servidor indicado por usuario
 	    
 	    server.sin_family = AF_INET;							// IPv4
 	    server.sin_port = htons(port);							// Se indica el puerto por donde escucha el servidor indicado por el usario
 	 
-	 	if (flag3) 													//Si el usuario indico un puerto local especifico
+	 	if (flag3) 											    //Si el usuario indico un puerto local especifico
 	 	{
     		client.sin_addr.s_addr = INADDR_ANY;				// Recibe clientes con cualquier direccion IP
 		    client.sin_family = AF_INET;						// IPv4
@@ -230,13 +215,13 @@ int main(int argc , char *argv[])
 		    //Bind
 		    if( bind(sock,(struct sockaddr *)&client , sizeof(client)) < 0)
 		    {
-		        //print the error message
-		        perror("bind failed. Error");
+		        
+		        perror("bind failed. Error");     //Imprime mensaje de error
 		        return 1;
 	    	}
 	 	}
 
-	    //Connect to remote server
+	    //Conecta con el servidor remoto
 	    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
 	    {
 	        perror("connect failed. Error");
@@ -264,34 +249,26 @@ int main(int argc , char *argv[])
 	        memset(sp, '\0', 2048);
 	    }
 
-	    //keep communicating with server
+	    //Mantiene comunicación con el servidor
 	    while(1)
 	    {
-	        if (!input_timeout(STDIN_FILENO,300)){			// Se esperan 5 minutos para el envío de data.
+    		printf("Enter message: ");
+	        fgets(message, 2048, stdin);
 
-		        fgets(message, 2048, stdin);
-	    		fprintf (stderr, "\nNo data sent \n");		// Se informa que no se ha enviado data, pero mantiene activa la conexión
-	    		fprintf(stderr,"Please enter message: ");	// y se solicita que ingrese un mensaje.
-
-	    	}else{
-			printf("Enter message: ");
-			fgets(message, 2048, stdin);
-
-			if (message[0] == '\0')						// Cuando se manda como entrada un archivo esto hace que al termniar de leerlo culmine el programa
-				return 0;
-
-			//Send some data
-			if(send(sock , message , strlen(message), MSG_NOSIGNAL) < 0)
-			{
-			    puts("Send failed");
-			    flag = 1;
-			    strcpy(sp,message);
-			    close(sock);
-			    break;    
-			}
-			strcpy(pp,message);
-			memset(message, '\0', 2048);
-		}
+	        if (message[0] == '\0')			// Cuando se manda como entrada un archivo esto hace que al termniar de leerlo culmine el programa
+	           	return 0;
+	        
+	        //Envía mensajes
+	        if(send(sock , message , strlen(message), MSG_NOSIGNAL) < 0)
+	        {
+	            puts("Send failed");
+	            flag = 1;
+	            strcpy(sp,message);
+	            close(sock);
+	            break;    
+	        }
+	        strcpy(pp,message);
+	        memset(message, '\0', 2048);
 	    }
 	}
 	free(pp);
