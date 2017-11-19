@@ -183,10 +183,10 @@ void *connection_handler(void *socket_desc)
             fprintf(fp, "%s",hi->msg);
             printf("%s\n", hi->msg);
             
-            while (!input_timeout(hi->fd,300)){   // Se esperan 5 minutos para el envío de data.
+            while (!input_timeout(hi->fd,10)){                 // Se esperan 5 minutos para el envío de data.
 
-                fprintf (stderr, "\nNo data sent \n");              // Se informa que no se ha enviado data, pero mantiene activa la conexión
-                //fprintf(stderr,"Please enter message ");            // y se solicita que ingrese un mensaje.
+                fprintf (stderr, "\nNo data sent \n");          // Se informa que no se ha enviado data, pero mantiene activa la conexión
+                fprintf(fp, "ALERT: No data sent");             // Envía la alerta al archivo
             }
 	 		    
 
