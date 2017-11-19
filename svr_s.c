@@ -152,10 +152,9 @@ void *connection_handler(void *socket_desc)
 	    exit(-1);
 	}
 
-    //Receive a message from client
+    //Recibe mensaje del cliente
     while( (read_size = read(hi->fd , hi->msg , 2048)) > 0 )
     {
-        //Send the message back to client
         int aux = 0;
 
         // Verifico si el mensaje entrante posee informacion de interes para generar una alerta
@@ -183,10 +182,10 @@ void *connection_handler(void *socket_desc)
             fprintf(fp, "%s",hi->msg);
             printf("%s\n", hi->msg);
             
-            while (!input_timeout(hi->fd,10)){                 // Se esperan 5 minutos para el envío de data.
+            while (!input_timeout(hi->fd,10)){             // Se esperan 5 minutos para el envío de data.
 
-                fprintf (stderr, "\nNo data sent \n");          // Se informa que no se ha enviado data, pero mantiene activa la conexión
-                fprintf(fp, "ALERT: No data sent");             // Envía la alerta al archivo
+                fprintf (stderr, "\nNo data sent \n");      // Se informa que no se ha enviado data, pero mantiene activa la conexión
+                fprintf(fp, "ALERT: No data sent");         // Envía la alerta al archivo
             }
 	 		    
 
